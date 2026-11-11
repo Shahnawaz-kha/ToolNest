@@ -1,0 +1,18 @@
+# ToolNest
+> Free, private, client-side utility suite containing 89+ web tools. All operations run directly inside the browser with zero server uploads.
+
+## Documentation & API Endpoints
+- Web Homepage: https://toolnest-fawn.vercel.app/
+- Privacy Standard: https://toolnest-fawn.vercel.app/privacy
+- Terms: https://toolnest-fawn.vercel.app/terms
+- Sitemap: https://toolnest-fawn.vercel.app/sitemap.xml
+
+## Tools Directory
+- [Word Counter](https://toolnest-fawn.vercel.app/tool/word-counter): Real-time word, character, and reading time counter.
+- [Base64 Codec](https://toolnest-fawn.vercel.app/tool/base64-encoder-decoder): Encode and decode base64 strings securely in-browser.
+- [JSON Formatter](https://toolnest-fawn.vercel.app/tool/json-formatter-validator): Validate, format, and minify JSON data.
+- [Case Converter](https://toolnest-fawn.vercel.app/tool/case-converter): Convert text between 8 case conventions.
+- [Loan & EMI Calculator](https://toolnest-fawn.vercel.app/tool/loan-emi-calculator): Compute monthly payments and interest rates.
+- [Image Compressor](https://toolnest-fawn.vercel.app/tool/image-compressor): Browser-based client-side image compression.
+- [QR Code Generator](https://toolnest-fawn.vercel.app/tool/qr-code-generator): Create high-resolution static QR codes.
+- [Hash Generator](https://toolnest-fawn.vercel.app/tool/hash-generator): Compute SHA-256 and SHA-512 hashes via WebCrypto API.

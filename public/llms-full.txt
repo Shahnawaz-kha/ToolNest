@@ -1,0 +1,18 @@
+# ToolNest Full Capabilities Manifest
+Platform: ToolNest
+Version: 1.0.0
+Execution: 100% Client-Side Browser Memory
+Server Storage: None
+Number of Utilities: 89
+
+Categories:
+1. PDF Tools (Text to PDF, Image to PDF, Watermark, Rotator, Merger, Splitter)
+2. Image Tools (Compressor, Resizer, Format Converters, Filters, Base64)
+3. Text Tools (Word Counter, Case Converter, Diff, Slug Generator, Deduplicator)
+4. Calculator Tools (Percentage, Unit, Loan/EMI, BMI, Discount, Tax)
+5. Developer Tools (Base64, JSON, Hashes, UUID, Unix Timestamp, Regex, Minifiers)
+6. QR & Barcode (URL QR, WiFi QR, vCard, Barcodes)
+7. SEO Tools (Meta Tags, Robots.txt, Sitemaps, Keyword Density, SERP)
+8. Social Media (Tweet Splitter, Caption Spacers, Hashtags)
+9. Design Tools (Color Converters, Shadows, Gradients, Contrast Checkers)
+10. Productivity Tools (Pomodoro, Stopwatch, Passwords, Dice, Timers)

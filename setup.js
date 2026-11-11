@@ -1,0 +1,1079 @@
+const fs = require('fs');
+const path = require('path');
+
+console.log('Building ToolNest project structure and files...');
+
+const files = {
+  'package.json': JSON.stringify({
+    name: 'toolnest',
+    private: true,
+    version: '0.1.0',
+    type: 'module',
+    scripts: {
+      dev: 'vite',
+      build: 'tsc && vite build',
+      preview: 'vite preview'
+    },
+    dependencies: {
+      'lucide-react': '^0.344.0',
+      'react': '^18.2.0',
+      'react-dom': '^18.2.0',
+      'react-router-dom': '^6.22.3'
+    },
+    devDependencies: {
+      '@types/react': '^18.2.66',
+      '@types/react-dom': '^18.2.22',
+      '@vitejs/plugin-react': '^4.2.1',
+      'autoprefixer': '^10.4.19',
+      'postcss': '^8.4.38',
+      'tailwindcss': '^3.4.1',
+      'typescript': '^5.2.2',
+      'vite': '^5.1.6'
+    }
+  }, null, 2),
+
+  'index.html': `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ToolNest - 89+ Free High Performance Online Tools</title>
+  </head>
+  <body class="bg-slate-50 dark:bg-[#05070f] min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`,
+
+  'vite.config.ts': `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+});`,
+
+  'postcss.config.js': `export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};`,
+
+  'tailwind.config.js': `/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          navy: {
+            800: '#0f172a',
+            900: '#0a0f1d',
+            950: '#05070f',
+          },
+          blue: {
+            500: '#3b82f6',
+            600: '#2563eb',
+            700: '#1d4ed8',
+          },
+          purple: {
+            500: '#a855f7',
+            600: '#9333ea',
+            700: '#7e22ce',
+          }
+        }
+      }
+    },
+  },
+  plugins: [],
+};`,
+
+  'tsconfig.json': JSON.stringify({
+    compilerOptions: {
+      target: 'ES2020',
+      useDefineForClassFields: true,
+      lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+      module: 'ESNext',
+      skipLibCheck: true,
+      moduleResolution: 'bundler',
+      allowImportingTsExtensions: true,
+      resolveJsonModule: true,
+      isolatedModules: true,
+      noEmit: true,
+      jsx: 'react-jsx',
+      strict: true,
+      noUnusedLocals: true,
+      noUnusedParameters: true,
+      noFallthroughCasesInSwitch: true
+    },
+    include: ['src']
+  }, null, 2),
+
+  'src/index.css': `@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 transition-colors duration-200 antialiased selection:bg-purple-500 selection:text-white dark:bg-[#05070f] dark:text-slate-100;
+  }
+}`,
+
+  'src/types/index.ts': `export type CategoryId = 
+  | 'pdf' | 'image' | 'text' | 'calculator' | 'developer' 
+  | 'qr-barcode' | 'seo' | 'social-media' | 'design' | 'productivity';
+
+export interface ToolMetadata {
+  id: string;
+  slug: string;
+  name: string;
+  shortDescription: string;
+  category: CategoryId;
+  iconName: string;
+  isPopular?: boolean;
+  isNew?: boolean;
+  component: string;
+  meta: {
+    title: string;
+    description: string;
+    keywords: string[];
+  };
+  instructions: {
+    howTo: string[];
+    features: string[];
+    faqs: { question: string; answer: string }[];
+  };
+}
+
+export interface Category {
+  id: CategoryId;
+  name: string;
+  description: string;
+  iconName: string;
+}`,
+
+  'src/data/categories.ts': `import { Category } from '../types';
+
+export const CATEGORIES: Category[] = [
+  { id: 'pdf', name: 'PDF Tools', description: 'Compress, merge, split, and convert PDF files', iconName: 'FileText' },
+  { id: 'image', name: 'Image Tools', description: 'Resize, crop, compress, and convert images', iconName: 'Image' },
+  { id: 'text', name: 'Text Tools', description: 'Manipulate, format, and count text elements', iconName: 'Type' },
+  { id: 'calculator', name: 'Calculator Tools', description: 'Financial, math, and unit conversion calculators', iconName: 'Calculator' },
+  { id: 'developer', name: 'Developer Tools', description: 'Formatters, encoders, parsers, and utilities', iconName: 'Code' },
+  { id: 'qr-barcode', name: 'QR & Barcode', description: 'Generate and scan QR codes and barcodes', iconName: 'QrCode' },
+  { id: 'seo', name: 'SEO Tools', description: 'Meta tag generators, keyword analyzers, and auditors', iconName: 'Search' },
+  { id: 'social-media', name: 'Social Media', description: 'Post formatters, hashtag creators, and downloaders', iconName: 'Share2' },
+  { id: 'design', name: 'Design Tools', description: 'Color palettes, contrast checkers, and CSS tools', iconName: 'Palette' },
+  { id: 'productivity', name: 'Productivity Tools', description: 'Timers, task trackers, notes, and utilities', iconName: 'CheckCircle2' },
+];`,
+
+  'src/data/tools.ts': `import { ToolMetadata } from '../types';
+
+export const TOOLS: ToolMetadata[] = [
+  {
+    id: 'word-counter',
+    slug: 'word-counter',
+    name: 'Word & Character Counter',
+    shortDescription: 'Count words, characters, sentences, paragraphs, and reading time in real-time.',
+    category: 'text',
+    iconName: 'Type',
+    isPopular: true,
+    component: 'WordCounter',
+    meta: {
+      title: 'Free Online Word Counter & Character Counter | ToolNest',
+      description: 'Accurate word counter, character counter, reading time analyzer, and sentence calculator. Client-side, fast and secure.',
+      keywords: ['word counter', 'character count', 'reading time calculator', 'text analyzer'],
+    },
+    instructions: {
+      howTo: [
+        'Paste or type your content into the text area.',
+        'View live statistics including words, characters, and reading time.',
+        'Use the copy or clear buttons to manage your text.',
+      ],
+      features: [
+        'Real-time updates with zero lag',
+        'Estimated speaking and reading times',
+        'Works 100% offline in your browser',
+      ],
+      faqs: [
+        {
+          question: 'Is my text sent to any server?',
+          answer: 'No. All processing is performed strictly inside your browser. Your data never leaves your device.',
+        },
+      ],
+    },
+  },
+  {
+    id: 'base64-codec',
+    slug: 'base64-encoder-decoder',
+    name: 'Base64 Encoder / Decoder',
+    shortDescription: 'Encode plain text to Base64 format or decode Base64 strings safely.',
+    category: 'developer',
+    iconName: 'Code',
+    isPopular: true,
+    component: 'Base64Codec',
+    meta: {
+      title: 'Online Base64 Encoder and Decoder | ToolNest',
+      description: 'Encode and decode Base64 data instantly in your browser with zero latency.',
+      keywords: ['base64 encoder', 'base64 decoder', 'developer tools', 'ascii to base64'],
+    },
+    instructions: {
+      howTo: [
+        'Select whether you want to Encode or Decode.',
+        'Input your source string in the left editor.',
+        'The output is generated instantly in the right editor.',
+      ],
+      features: [
+        'One-click clipboard copy',
+        'Supports standard UTF-8 characters',
+        'Error detection for invalid Base64 input',
+      ],
+      faqs: [
+        {
+          question: 'What is Base64 encoding used for?',
+          answer: 'Base64 is commonly used to encode binary data into an ASCII string format for transmission over text-based networks.',
+        },
+      ],
+    },
+  },
+];`,
+
+  'src/context/ThemeContext.tsx': `import React, { createContext, useContext, useEffect, useState } from 'react';
+
+type Theme = 'light' | 'dark';
+
+interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('tn_theme') as Theme;
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('tn_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error('useTheme must be used within ThemeProvider');
+  return context;
+};`,
+
+  'src/context/UserPreferencesContext.tsx': `import React, { createContext, useContext, useEffect, useState } from 'react';
+
+interface PreferencesContextType {
+  favorites: string[];
+  recentTools: string[];
+  toggleFavorite: (toolId: string) => void;
+  recordToolUsage: (toolId: string) => void;
+}
+
+const PreferencesContext = createContext<PreferencesContextType | undefined>(undefined);
+
+export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    const saved = localStorage.getItem('tn_favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [recentTools, setRecentTools] = useState<string[]>(() => {
+    const saved = localStorage.getItem('tn_recent');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tn_favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  useEffect(() => {
+    localStorage.setItem('tn_recent', JSON.stringify(recentTools));
+  }, [recentTools]);
+
+  const toggleFavorite = (toolId: string) => {
+    setFavorites((prev) =>
+      prev.includes(toolId) ? prev.filter((id) => id !== toolId) : [...prev, toolId]
+    );
+  };
+
+  const recordToolUsage = (toolId: string) => {
+    setRecentTools((prev) => {
+      const filtered = prev.filter((id) => id !== toolId);
+      return [toolId, ...filtered].slice(0, 8);
+    });
+  };
+
+  return (
+    <PreferencesContext.Provider value={{ favorites, recentTools, toggleFavorite, recordToolUsage }}>
+      {children}
+    </PreferencesContext.Provider>
+  );
+};
+
+export const usePreferences = () => {
+  const ctx = useContext(PreferencesContext);
+  if (!ctx) throw new Error('usePreferences must be used within PreferencesProvider');
+  return ctx;
+};`,
+
+  'src/components/ui/SearchModal.tsx': `import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, X } from 'lucide-react';
+import { TOOLS } from '../../data/tools';
+
+export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const [query, setQuery] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        onClose();
+      }
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const filtered = query.trim() === ''
+    ? []
+    : TOOLS.filter(
+        (t) =>
+          t.name.toLowerCase().includes(query.toLowerCase()) ||
+          t.shortDescription.toLowerCase().includes(query.toLowerCase()) ||
+          t.meta.keywords.some((k) => k.toLowerCase().includes(query.toLowerCase()))
+      );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 p-4 pt-20 backdrop-blur-sm">
+      <div className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl dark:bg-brand-navy-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="flex items-center border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+          <Search className="h-5 w-5 text-slate-400 mr-3" />
+          <input
+            autoFocus
+            type="text"
+            placeholder="Search tools by name, utility, or keywords..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400 dark:text-white"
+          />
+          <button onClick={onClose} className="rounded p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="max-h-80 overflow-y-auto p-2">
+          {query.trim() === '' ? (
+            <p className="p-4 text-center text-xs text-slate-400">Type "word", "base64", or other tool names...</p>
+          ) : filtered.length === 0 ? (
+            <p className="p-4 text-center text-xs text-slate-400">No matching tools found.</p>
+          ) : (
+            filtered.map((tool) => (
+              <button
+                key={tool.id}
+                onClick={() => {
+                  navigate('/tool/' + tool.slug);
+                  onClose();
+                }}
+                className="flex w-full items-center justify-between rounded-lg p-3 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{tool.name}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{tool.shortDescription}</p>
+                </div>
+                <span className="rounded bg-brand-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-brand-blue-600 dark:text-brand-blue-400">
+                  {tool.category}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};`,
+
+  'src/components/ui/ToolCard.tsx': `import React from 'react';
+import { Link } from 'react-router-dom';
+import { Star, ArrowRight } from 'lucide-react';
+import { ToolMetadata } from '../../types';
+import { usePreferences } from '../../context/UserPreferencesContext';
+
+export const ToolCard: React.FC<{ tool: ToolMetadata }> = ({ tool }) => {
+  const { favorites, toggleFavorite } = usePreferences();
+  const isFav = favorites.includes(tool.id);
+
+  return (
+    <div className="group relative flex flex-col justify-between rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-brand-blue-500/40 hover:shadow-lg hover:shadow-brand-blue-500/5 dark:border-slate-800/90 dark:bg-brand-navy-900/60 dark:hover:border-brand-purple-500/40">
+      <div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="rounded-md bg-brand-blue-50 px-2 py-1 text-xs font-medium text-brand-blue-700 dark:bg-brand-blue-950/60 dark:text-brand-blue-300">
+            {tool.category}
+          </span>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              toggleFavorite(tool.id);
+            }}
+            aria-label="Favorite tool"
+            className="text-slate-400 hover:text-amber-500 dark:hover:text-amber-400"
+          >
+            <Star className={'h-4 w-4 ' + (isFav ? 'fill-amber-400 text-amber-400' : '')} />
+          </button>
+        </div>
+
+        <h3 className="mt-3 text-base font-semibold text-slate-900 group-hover:text-brand-blue-600 dark:text-white dark:group-hover:text-brand-blue-400">
+          {tool.name}
+        </h3>
+        <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+          {tool.shortDescription}
+        </p>
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <Link
+          to={'/tool/' + tool.slug}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-blue-600 hover:text-brand-blue-700 dark:text-brand-blue-400"
+        >
+          Open Tool <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+        </Link>
+      </div>
+    </div>
+  );
+};`,
+
+  'src/components/layout/Header.tsx': `import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Sun, Moon, Search, Layers, Menu, X } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
+import { SearchModal } from '../ui/SearchModal';
+
+export const Header: React.FC = () => {
+  const { theme, toggleTheme } = useTheme();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  return (
+    <>
+      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-slate-800/80 dark:bg-brand-navy-950/80">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-blue-600 to-brand-purple-600 shadow-md shadow-brand-blue-500/20 group-hover:scale-105 transition-transform">
+              <Layers className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Tool<span className="text-brand-blue-600 dark:text-brand-blue-500">Nest</span>
+              </span>
+              <span className="hidden sm:inline-block ml-2 rounded-full bg-brand-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-brand-blue-600 dark:text-brand-blue-400">
+                PRO
+              </span>
+            </div>
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setIsSearchOpen(true)}
+            className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-100/70 px-3.5 py-1.5 text-sm text-slate-500 transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-slate-700 w-44 sm:w-64"
+          >
+            <Search className="h-4 w-4" />
+            <span className="flex-1 text-left">Search 89+ tools...</span>
+            <kbd className="hidden rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400 sm:inline-block">
+              ⌘K
+            </kbd>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle Theme"
+              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition"
+            >
+              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 sm:hidden"
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
+        </div>
+
+        {mobileMenuOpen && (
+          <div className="border-b border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-brand-navy-950 sm:hidden">
+            <nav className="flex flex-col gap-2">
+              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
+                All Tools
+              </Link>
+              <Link to="/category/text" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
+                Text Tools
+              </Link>
+              <Link to="/category/developer" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
+                Developer Tools
+              </Link>
+            </nav>
+          </div>
+        )}
+      </header>
+
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+    </>
+  );
+};`,
+
+  'src/components/layout/Footer.tsx': `import React from 'react';
+import { Link } from 'react-router-dom';
+import { CATEGORIES } from '../../data/categories';
+
+export const Footer: React.FC = () => {
+  return (
+    <footer className="mt-auto border-t border-slate-200 bg-white dark:border-slate-800/80 dark:bg-brand-navy-950">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
+          <div className="col-span-2">
+            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Tool<span className="text-brand-blue-600 dark:text-brand-blue-500">Nest</span>
+            </span>
+            <p className="mt-3 max-w-sm text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              High-performance, client-side utility tools designed for privacy, speed, and zero latency.
+              Free for developers, designers, and students worldwide.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
+              Categories
+            </h3>
+            <ul className="mt-4 space-y-2 text-sm">
+              {CATEGORIES.slice(0, 5).map((cat) => (
+                <li key={cat.id}>
+                  <Link to={'/category/' + cat.id} className="text-slate-600 hover:text-brand-blue-600 dark:text-slate-400">
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
+              More Categories
+            </h3>
+            <ul className="mt-4 space-y-2 text-sm">
+              {CATEGORIES.slice(5, 10).map((cat) => (
+                <li key={cat.id}>
+                  <Link to={'/category/' + cat.id} className="text-slate-600 hover:text-brand-blue-600 dark:text-slate-400">
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
+              Legal & Trust
+            </h3>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li><span className="text-slate-500">Privacy Policy (Client-Side Safe)</span></li>
+              <li><span className="text-slate-500">Terms of Service</span></li>
+              <li><span className="text-slate-500">About ToolNest</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-12 border-t border-slate-200 pt-6 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-500">
+          © {new Date().getFullYear()} ToolNest Platform. All tools run 100% locally in your browser.
+        </div>
+      </div>
+    </footer>
+  );
+};`,
+
+  'src/components/layout/ToolLayout.tsx': `import React from 'react';
+import { Link } from 'react-router-dom';
+import { Star, ShieldCheck, Zap } from 'lucide-react';
+import { ToolMetadata } from '../../types';
+import { usePreferences } from '../../context/UserPreferencesContext';
+import { ToolCard } from '../ui/ToolCard';
+import { TOOLS } from '../../data/tools';
+
+export const ToolLayout: React.FC<{ tool: ToolMetadata; children: React.ReactNode }> = ({ tool, children }) => {
+  const { favorites, toggleFavorite } = usePreferences();
+  const isFav = favorites.includes(tool.id);
+  const relatedTools = TOOLS.filter((t) => t.category === tool.category && t.id !== tool.id).slice(0, 3);
+
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+      <nav className="mb-4 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <Link to="/" className="hover:underline">Home</Link>
+        <span>/</span>
+        <Link to={'/category/' + tool.category} className="capitalize hover:underline">{tool.category}</Link>
+        <span>/</span>
+        <span className="text-slate-900 dark:text-white font-medium">{tool.name}</span>
+      </nav>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6 dark:border-slate-800">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{tool.name}</h1>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{tool.shortDescription}</p>
+        </div>
+        <button
+          onClick={() => toggleFavorite(tool.id)}
+          className="flex items-center gap-2 self-start rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900"
+        >
+          <Star className={'h-4 w-4 ' + (isFav ? 'fill-amber-400 text-amber-400' : 'text-slate-400')} />
+          {isFav ? 'Saved in Favorites' : 'Add to Favorites'}
+        </button>
+      </div>
+
+      <section className="my-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-brand-navy-900/40">
+        {children}
+      </section>
+
+      <div className="my-8 rounded-xl border border-dashed border-slate-300 bg-slate-50 py-8 text-center text-xs text-slate-400 dark:border-slate-800 dark:bg-brand-navy-900/20">
+        Advertisement Placement Space
+      </div>
+
+      <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-200 pt-8 dark:border-slate-800">
+        <div>
+          <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+            <Zap className="h-4 w-4 text-brand-blue-500" /> How to use this tool
+          </h2>
+          <ol className="mt-3 list-decimal list-inside space-y-1.5 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            {tool.instructions.howTo.map((step, idx) => (
+              <li key={idx}>{step}</li>
+            ))}
+          </ol>
+        </div>
+
+        <div>
+          <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+            <ShieldCheck className="h-4 w-4 text-brand-purple-500" /> Privacy & Local Processing
+          </h2>
+          <p className="mt-3 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            ToolNest runs calculations entirely on client-side JavaScript. None of your data or files are transmitted over networks.
+          </p>
+        </div>
+      </div>
+
+      {tool.instructions.faqs.length > 0 && (
+        <div className="mt-8 border-t border-slate-200 pt-8 dark:border-slate-800">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4">Frequently Asked Questions</h3>
+          <div className="space-y-4">
+            {tool.instructions.faqs.map((faq, i) => (
+              <div key={i} className="rounded-lg bg-slate-100/60 p-4 dark:bg-slate-900/40">
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">{faq.question}</h4>
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {relatedTools.length > 0 && (
+        <div className="mt-12 border-t border-slate-200 pt-8 dark:border-slate-800">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4">Related Tools</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {relatedTools.map((relTool) => (
+              <ToolCard key={relTool.id} tool={relTool} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};`,
+
+  'src/tools/text/WordCounter.tsx': `import React, { useState } from 'react';
+
+export const WordCounter: React.FC = () => {
+  const [text, setText] = useState('');
+
+  const wordCount = text.trim() === '' ? 0 : text.trim().split(/\\s+/).length;
+  const charCount = text.length;
+  const charNoSpaces = text.replace(/\\s/g, '').length;
+  const readingTime = Math.ceil(wordCount / 200);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-xl bg-slate-50 p-4 text-center dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+          <span className="text-2xl font-black text-brand-blue-600 dark:text-brand-blue-400">{wordCount}</span>
+          <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mt-1">Words</p>
+        </div>
+        <div className="rounded-xl bg-slate-50 p-4 text-center dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+          <span className="text-2xl font-black text-brand-purple-600 dark:text-brand-purple-400">{charCount}</span>
+          <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mt-1">Characters</p>
+        </div>
+        <div className="rounded-xl bg-slate-50 p-4 text-center dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+          <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{charNoSpaces}</span>
+          <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mt-1">No Spaces</p>
+        </div>
+        <div className="rounded-xl bg-slate-50 p-4 text-center dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+          <span className="text-2xl font-black text-amber-500">~{readingTime} min</span>
+          <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mt-1">Reading Time</p>
+        </div>
+      </div>
+
+      <textarea
+        rows={8}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Type or paste your text here..."
+        className="w-full rounded-xl border border-slate-200 bg-transparent p-4 text-sm outline-none transition focus:border-brand-blue-500 dark:border-slate-800 dark:text-white"
+      />
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => navigator.clipboard.writeText(text)}
+          disabled={!text}
+          className="rounded-lg bg-brand-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-brand-blue-700 disabled:opacity-50"
+        >
+          Copy Text
+        </button>
+        <button
+          onClick={() => setText('')}
+          disabled={!text}
+          className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900 disabled:opacity-50"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  );
+};`,
+
+  'src/tools/dev/Base64Codec.tsx': `import React, { useState } from 'react';
+
+export const Base64Codec: React.FC = () => {
+  const [input, setInput] = useState('');
+  const [mode, setMode] = useState<'encode' | 'decode'>('encode');
+  const [error, setError] = useState<string | null>(null);
+
+  const processOutput = () => {
+    if (!input) return '';
+    try {
+      if (mode === 'encode') {
+        return btoa(input);
+      } else {
+        return atob(input);
+      }
+    } catch {
+      return '';
+    }
+  };
+
+  const handleInputChange = (val: string) => {
+    setInput(val);
+    setError(null);
+    if (mode === 'decode' && val) {
+      try {
+        atob(val);
+      } catch {
+        setError('Invalid Base64 input string');
+      }
+    }
+  };
+
+  const output = processOutput();
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <button
+          onClick={() => { setMode('encode'); setError(null); }}
+          className={'rounded-lg px-4 py-1.5 text-xs font-semibold transition ' + (
+            mode === 'encode'
+              ? 'bg-brand-blue-600 text-white'
+              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+          )}
+        >
+          Encode
+        </button>
+        <button
+          onClick={() => { setMode('decode'); setError(null); }}
+          className={'rounded-lg px-4 py-1.5 text-xs font-semibold transition ' + (
+            mode === 'decode'
+              ? 'bg-brand-blue-600 text-white'
+              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+          )}
+        >
+          Decode
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+            Input ({mode === 'encode' ? 'Plain Text' : 'Base64'})
+          </label>
+          <textarea
+            rows={6}
+            value={input}
+            onChange={(e) => handleInputChange(e.target.value)}
+            placeholder="Type here..."
+            className="w-full rounded-xl border border-slate-200 bg-transparent p-3 text-xs font-mono outline-none focus:border-brand-blue-500 dark:border-slate-800 dark:text-white"
+          />
+          {error && <p className="mt-1 text-xs text-rose-500 font-medium">{error}</p>}
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+            Output ({mode === 'encode' ? 'Base64' : 'Plain Text'})
+          </label>
+          <textarea
+            readOnly
+            rows={6}
+            value={output}
+            placeholder="Result will appear here..."
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-mono outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+          />
+        </div>
+      </div>
+
+      <button
+        onClick={() => navigator.clipboard.writeText(output)}
+        disabled={!output}
+        className="rounded-lg bg-brand-purple-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-brand-purple-700 disabled:opacity-50"
+      >
+        Copy Result
+      </button>
+    </div>
+  );
+};`,
+
+  'src/pages/HomePage.tsx': `import React, { useState } from 'react';
+import { CATEGORIES } from '../data/categories';
+import { TOOLS } from '../data/tools';
+import { ToolCard } from '../components/ui/ToolCard';
+import { usePreferences } from '../context/UserPreferencesContext';
+
+export const HomePage: React.FC = () => {
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const { favorites } = usePreferences();
+
+  const favoriteTools = TOOLS.filter((t) => favorites.includes(t.id));
+  const filteredTools =
+    selectedCategory === 'all'
+      ? TOOLS
+      : TOOLS.filter((t) => t.category === selectedCategory);
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="text-center max-w-2xl mx-auto mb-14">
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl text-slate-900 dark:text-white">
+          Every Online Tool You Need.{' '}
+          <span className="bg-gradient-to-r from-brand-blue-600 to-brand-purple-600 bg-clip-text text-transparent">
+            Fast, Free, & Private.
+          </span>
+        </h1>
+        <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+          No signups, no file uploads to third-party servers. All operations execute directly inside your browser.
+        </p>
+      </div>
+
+      {favoriteTools.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Your Favorites</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {favoriteTools.map((tool) => (
+              <ToolCard key={tool.id} tool={tool} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+        <button
+          onClick={() => setSelectedCategory('all')}
+          className={'rounded-full px-4 py-1.5 text-xs font-semibold transition ' + (
+            selectedCategory === 'all'
+              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+          )}
+        >
+          All Tools
+        </button>
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            className={'rounded-full px-4 py-1.5 text-xs font-semibold transition ' + (
+              selectedCategory === cat.id
+                ? 'bg-brand-blue-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+            )}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {filteredTools.map((tool) => (
+          <ToolCard key={tool.id} tool={tool} />
+        ))}
+      </div>
+    </div>
+  );
+};`,
+
+  'src/pages/CategoryPage.tsx': `import React from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { CATEGORIES } from '../data/categories';
+import { TOOLS } from '../data/tools';
+import { ToolCard } from '../components/ui/ToolCard';
+
+export const CategoryPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const category = CATEGORIES.find((c) => c.id === id);
+  const tools = TOOLS.filter((t) => t.category === id);
+
+  if (!category) {
+    return (
+      <div className="py-20 text-center">
+        <h2 className="text-xl font-bold">Category not found</h2>
+        <Link to="/" className="text-brand-blue-600 underline mt-4 inline-block">Return Home</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">{category.name}</h1>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{category.description}</p>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {tools.map((t) => (
+          <ToolCard key={t.id} tool={t} />
+        ))}
+      </div>
+    </div>
+  );
+};`,
+
+  'src/pages/ToolHostPage.tsx': `import React, { useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { TOOLS } from '../data/tools';
+import { ToolLayout } from '../components/layout/ToolLayout';
+import { usePreferences } from '../context/UserPreferencesContext';
+import { WordCounter } from '../tools/text/WordCounter';
+import { Base64Codec } from '../tools/dev/Base64Codec';
+
+const TOOL_COMPONENTS: Record<string, React.ReactNode> = {
+  WordCounter: <WordCounter />,
+  Base64Codec: <Base64Codec />,
+};
+
+export const ToolHostPage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const { recordToolUsage } = usePreferences();
+  const tool = TOOLS.find((t) => t.slug === slug);
+
+  useEffect(() => {
+    if (tool) {
+      document.title = tool.meta.title;
+      recordToolUsage(tool.id);
+    }
+  }, [tool]);
+
+  if (!tool) {
+    return (
+      <div className="py-20 text-center">
+        <h2 className="text-xl font-bold">Tool Not Found</h2>
+        <Link to="/" className="text-brand-blue-600 underline mt-4 inline-block">Return to Directory</Link>
+      </div>
+    );
+  }
+
+  const ComponentToRender = TOOL_COMPONENTS[tool.component] || <div>Tool under construction</div>;
+
+  return <ToolLayout tool={tool}>{ComponentToRender}</ToolLayout>;
+};`,
+
+  'src/App.tsx': `import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import { PreferencesProvider } from './context/UserPreferencesContext';
+import { Header } from './components/layout/Header';
+import { Footer } from './components/layout/Footer';
+import { HomePage } from './pages/HomePage';
+import { CategoryPage } from './pages/CategoryPage';
+import { ToolHostPage } from './pages/ToolHostPage';
+
+export function App() {
+  return (
+    <ThemeProvider>
+      <PreferencesProvider>
+        <BrowserRouter>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/category/:id" element={<CategoryPage />} />
+                <Route path="/tool/:slug" element={<ToolHostPage />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </BrowserRouter>
+      </PreferencesProvider>
+    </ThemeProvider>
+  );
+}
+
+export default App;`,
+
+  'src/main.tsx': `import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);`
+};
+
+for (const [filePath, content] of Object.entries(files)) {
+  const fullPath = path.join(process.cwd(), filePath);
+  fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+  fs.writeFileSync(fullPath, content);
+  console.log('  Created ' + filePath);
+}
+
+console.log('\nAll 20+ foundation files created successfully!');

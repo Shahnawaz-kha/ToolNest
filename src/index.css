@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#f8fafc] text-slate-800 antialiased selection:bg-brand-blue-500 selection:text-white dark:bg-[#0b0f19] dark:text-slate-100;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Shimmering Animated Gradient Text */
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-shimmer-text {
+  background: linear-gradient(90deg, #2563eb, #7c3aed, #db2777, #2563eb);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 6s ease infinite;
+}
+
+/* Hide scrollbar for mobile horizontal category rail */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Tactile mobile tap physics */
+.touch-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.touch-card:active {
+  transform: scale(0.98);
+}

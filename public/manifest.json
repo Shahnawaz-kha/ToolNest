@@ -1,0 +1,23 @@
+{
+  "short_name": "ToolNest",
+  "name": "ToolNest - 89+ Free Online Utility Tools",
+  "description": "High-performance, client-side utility suite with 89+ tools.",
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "display": "standalone",
+  "scope": "/",
+  "categories": [
+    "utilities",
+    "productivity",
+    "developer tools"
+  ],
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
